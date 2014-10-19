@@ -1,98 +1,32 @@
-<h1>Welcome to TaskLogger</h1>
+{% extends "base.html.twig" %}
 
-<h2>{{date.format('Y-m-d')}}</h2>
+{% block body %}
+    <h1>Welcome to TaskLogger</h1>
 
-<div>
-    <button id="start_task_button" data-date="{{date.format('Y-m-d')}}">Start Task</button>
-</div>
+    <h2>{{date.format('Y-m-d')}}</h2>
 
-<ul id="tasks">
-    {% for task in tasks %}
-        {% set workLog = task.getWorkLogs().last() %}
-        <li class="task" data-id='{{task.id}}'>
-            {{ task.getUpdatedAt().format('H:i') }} {{ task.getDescription() }}
-            {% if task.getWorkLogs().last().getDuration() is null %}
-                <button id="stop_task_button" data-task="{{task.id}}">Stop Task</button>
-            {% else %}
-                {{ workLog.getDuration().format('G:i') }}
-                <button class="continue_task_button" data-task="{{task.id}}">Continue Task</button>
-            {% endif %}
-        </li>
-    {% endfor %}
-</ul>
+    <div>
+        <button id="start_task_button" data-date="{{date.format('Y-m-d')}}">Start Task</button>
+    </div>
 
-<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
-<script src="{{ asset('bundles/fosjsrouting/js/router.js') }}"></script>
-<script src="{{ path('fos_js_routing_js', {"callback": "fos.Router.setData"}) }}"></script>
-<script type="text/javascript">
-    function stopCurrentTask()
-    {
-        if($('#stop_task_button').size() > 0) {
-            var taskId = $('#stop_task_button').data('task');
-            $.ajax({
-                url: Routing.generate('stop_task', {id: taskId})
-            }).done(function(data){
-                console.log(data);
-                $('#stop_task_button').hide();
-                //$('#stop_task_button').parent().append(data);
-                //$('#stop_task_button').remove();
-            }).fail(function(){
-                return false;
-            });
-        }
+    <ul id="tasks">
+        {% for task in tasks %}
+            {% set workLog = task.getWorkLogs().last() %}
+            <li class="task" data-id='{{task.id}}'>
+                {{ task.getUpdatedAt().format('H:i') }} {{ task.getDescription() }}
+                {% if task.getWorkLogs().last().getDuration() is null %}
+                    <button id="stop_task_button" data-task="{{task.id}}">Stop Task</button>
+                {% else %}
+                    {{ workLog.getDuration().format('G:i') }}
+                    <button class="continue_task_button" data-task="{{task.id}}">Continue Task</button>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
 
-        return true;
-    }
+{% block javascripts %}
+    {{ parent() }}
 
-    function createTask()
-    {
-        $.ajax({
-            url: Routing.generate('create_task'),
-            method: 'post'
-        }).done(function(task){
-            console.log(task);
-            renderTask(task);
-            startWork(task.id);
-        }).fail(function(){
-            return false;
-        });
-    }
-
-    function startWork(taskId)
-    {
-        $.ajax({
-            url: Routing.generate('start_work', {taskId: taskId}),
-            method: 'post'
-        }).done(function(data){
-            console.log(data);
-            return true;
-        }).fail(function(){
-            return false;
-        });
-    }
-
-    function renderTask(task)
-    {
-        console.log(task.createdAt);
-        $('#tasks').prepend('<li class="task" data-id="' + task.id + '">'+
-            task.updatedAt + ' ' +
-            task.description +
-            '<button id="stop_task_button" data-task="' + task.id + '">Stop Task</button>' +
-        '</li>');
-    }
-
-    $(document).ready(function() {
-        $('#start_task_button').on('click', function() {
-            stopCurrentTask();
-            createTask();
-        });
-        $('#stop_task_button').on('click', function() {
-            stopCurrentTask();
-        });
-        $('.continue_task_button').on('click', function() {
-            if(startWork($(this).data('task'))) {
-                $(this).remove();
-            }
-        });
-    });
-</script>
+    <script src="{{ asset('bundles/taskloggertasklogger/js/tasks.js') }}"></script>
+{% endblock %}
