@@ -1,12 +1,12 @@
-{% extends "base.html.twig" %}
+{% extends "TaskLoggerTaskLoggerBundle::layout.html.twig" %}
 
-{% block body %}
-    <h1>Welcome to TaskLogger</h1>
+{% block title 'Task Logger - tasks' %}
 
+{% block content %}
     <h2>{{date.format('Y-m-d')}}</h2>
 
     <div>
-        <button id="start_task_button" data-date="{{date.format('Y-m-d')}}">Start Task</button>
+        <button type="button" class="btn btn-success" id="start_task_button" data-date="{{date.format('Y-m-d')}}">Start Task</button>
     </div>
 
     <ul id="tasks">

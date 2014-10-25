@@ -30,7 +30,7 @@ class TaskLoggerController extends Controller
         $startedAt = new \DateTime();
         $startedAt->setTimestamp(strtotime($date == null ? 'now': $date));
 
-        $entityManager = $this->getDoctrine()->getEntityManager();
+        $entityManager = $this->getDoctrine()->getManager();
         $taskRepository = $entityManager->getRepository('TaskLogger\TaskLoggerBundle\Entity\Task');
 
         $tasks = $taskRepository
