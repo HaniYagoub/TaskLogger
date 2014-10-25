@@ -1,16 +1,14 @@
 <?php
 
-namespace TaskLogger\TaskLoggerBundle\Entity;
+namespace Haniki\TaskLoggerBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-
-use TaskLogger\TaskLoggerBundle\Entity\Task;
 
 /**
  * WorkLog
  *
  * @ORM\Table()
- * @ORM\Entity(repositoryClass="TaskLogger\TaskLoggerBundle\Entity\WorkLogRepository")
+ * @ORM\Entity(repositoryClass="Haniki\TaskLoggerBundle\Entity\WorkLogRepository")
  */
 class WorkLog
 {
@@ -27,7 +25,7 @@ class WorkLog
      * @var Task
      *
      * @ORM\ManyToOne(
-     *      targetEntity="TaskLogger\TaskLoggerBundle\Entity\Task",
+     *      targetEntity="Haniki\TaskLoggerBundle\Entity\Task",
      *      inversedBy="workLogs"
      * )
      * @ORM\JoinColumn(

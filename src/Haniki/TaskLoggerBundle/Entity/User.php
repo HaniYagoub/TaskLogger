@@ -1,6 +1,6 @@
 <?php
 
-namespace TaskLogger\TaskLoggerBundle\Entity;
+namespace Haniki\TaskLoggerBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
  * User
  *
  * @ORM\Table()
- * @ORM\Entity(repositoryClass="TaskLogger\TaskLoggerBundle\Entity\UserRepository")
+ * @ORM\Entity(repositoryClass="Haniki\TaskLoggerBundle\Entity\UserRepository")
  */
 class User
 {
@@ -47,7 +47,7 @@ class User
      * @var ArrayCollection
      *
      * @ORM\OneToMany(
-     *      targetEntity="TaskLogger\TaskLoggerBundle\Entity\Task",
+     *      targetEntity="Haniki\TaskLoggerBundle\Entity\Task",
      *      mappedBy="user",
      *      cascade={"persist"}
      * )

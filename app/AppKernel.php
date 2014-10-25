@@ -16,7 +16,7 @@ class AppKernel extends Kernel
             new Symfony\Bundle\AsseticBundle\AsseticBundle(),
             new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
-            new TaskLogger\TaskLoggerBundle\TaskLoggerTaskLoggerBundle(),
+            new Haniki\TaskLoggerBundle\HanikiTaskLoggerBundle(),
             new FOS\JsRoutingBundle\FOSJsRoutingBundle(),
         );
 

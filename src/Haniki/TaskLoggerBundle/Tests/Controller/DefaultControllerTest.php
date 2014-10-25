@@ -1,6 +1,6 @@
 <?php
 
-namespace TaskLogger\TaskLoggerBundle\Tests\Controller;
+namespace Haniki\TaskLoggerBundle\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 

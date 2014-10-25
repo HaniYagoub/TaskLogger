@@ -1,4 +1,4 @@
 services:
 #    task_logger_task_logger.example:
-#        class: TaskLogger\TaskLoggerBundle\Example
+#        class: Haniki\TaskLoggerBundle\Example
 #        arguments: [@service_id, "plain_value", %parameter%]

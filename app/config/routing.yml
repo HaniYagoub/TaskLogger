@@ -1,5 +1,5 @@
 task_logger_task_logger:
-    resource: "@TaskLoggerTaskLoggerBundle/Controller"
+    resource: "@HanikiTaskLoggerBundle/Controller"
     type: annotation
     prefix:   /
 

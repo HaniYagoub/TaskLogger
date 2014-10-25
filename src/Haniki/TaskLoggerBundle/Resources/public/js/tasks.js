@@ -61,7 +61,7 @@ function startWork(taskId)
 
 function renderTask(task)
 {
-    $("#tasks").loadTemplate("bundles/taskloggertasklogger/templates/task.html",
+    $("#tasks").loadTemplate("bundles/hanikitasklogger/templates/task.html",
     {
         id: task.id,
         updatedAt: task.updatedAt,

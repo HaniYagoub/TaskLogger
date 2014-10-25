@@ -1,14 +1,14 @@
 <?php
 
-namespace TaskLogger\TaskLoggerBundle\Controller;
+namespace Haniki\TaskLoggerBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 
-use TaskLogger\TaskLoggerBundle\Entity\Task;
-use TaskLogger\TaskLoggerBundle\Entity\WorkLog;
+use Haniki\TaskLoggerBundle\Entity\Task;
+use Haniki\TaskLoggerBundle\Entity\WorkLog;
 
 class TaskLoggerController extends Controller
 {
@@ -17,7 +17,7 @@ class TaskLoggerController extends Controller
      */
     public function indexAction()
     {
-        return $this->render('TaskLoggerTaskLoggerBundle:TaskLogger:index.html.twig');
+        return $this->render('HanikiTaskLoggerBundle:TaskLogger:index.html.twig');
     }
 
     /**
@@ -31,7 +31,7 @@ class TaskLoggerController extends Controller
         $startedAt->setTimestamp(strtotime($date == null ? 'now': $date));
 
         $entityManager = $this->getDoctrine()->getManager();
-        $taskRepository = $entityManager->getRepository('TaskLogger\TaskLoggerBundle\Entity\Task');
+        $taskRepository = $entityManager->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
 
         $tasks = $taskRepository
             ->createQueryBuilder('t')
@@ -44,7 +44,7 @@ class TaskLoggerController extends Controller
             ->getQuery()
             ->getResult();
 
-        return $this->render('TaskLoggerTaskLoggerBundle:TaskLogger:tasks.html.twig', array(
+        return $this->render('HanikiTaskLoggerBundle:TaskLogger:tasks.html.twig', array(
             'tasks' => $tasks,
             'date' => $startedAt
         ));
@@ -83,7 +83,7 @@ class TaskLoggerController extends Controller
             if(($taskId = $request->get('taskId', null)) != null) {
                 /* @var $task Task */
                 $task = $this->getDoctrine()
-                    ->getRepository('TaskLogger\TaskLoggerBundle\Entity\Task')
+                    ->getRepository('Haniki\TaskLoggerBundle\Entity\Task')
                     ->find($taskId);
 
                 if (!$task) {
@@ -119,7 +119,7 @@ class TaskLoggerController extends Controller
     {
         $entityManager = $this->getDoctrine()->getEntityManager();
         /* @var $task \TaskLogger\TaskLoggerBundle\Entity\Task */
-        $task = $entityManager->getRepository('TaskLogger\TaskLoggerBundle\Entity\Task')->find($id);
+        $task = $entityManager->getRepository('Haniki\TaskLoggerBundle\Entity\Task')->find($id);
 
         if (!$task) {
             throw $this->createNotFoundException("Aucune tâche n'a été trouvée pour cet id : $id");
