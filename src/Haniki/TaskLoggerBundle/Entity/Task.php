@@ -217,14 +217,17 @@ class Task
     }
 
     /**
+     * Get the total duration of a task
      *
-     * @return type
+     * @return int the total duration in seconds
      */
     public function getDuration()
     {
         $duration = 0;
         foreach ($this->workLogs as $workLog) {
-            $duration += eval($workLog->getDuration('H*60*60+i*60+m'));
+            if (null != $workLog->getDuration()) {
+                $duration += eval($workLog->getDuration('H*60*60+i*60+m'));
+            }
         }
 
         return $duration;
@@ -238,8 +241,8 @@ class Task
     {
         return array(
             'id' => $this->id,
-            'createdAt' => $this->createdAt->format('H:i'),
-            'updatedAt' => $this->updatedAt->format('H:i'),
+            'createdAt' => $this->createdAt,
+            'updatedAt' => $this->updatedAt,
             'description' => $this->description,
             'user' => $this->user,
             'workLogs' => $this->workLogs->toArray(),

@@ -1,6 +1,14 @@
-<li class="task" data-id>
-    <span class="started-at" data-content="startedAt"></span>
-    <span class="description" data-content="description"></span>
-    <span class="duration" data-content="duration"></span>
-    <button class="stop_task_button" data-id>Stop Task</button>
+<li class="task list-group-item" data-id="id">
+    <div class="row">
+        <div class="col-xs-2 started-at" data-content="startedAt"></div>
+        <div class="col-xs-2 updated-at" data-content="updatedAt"></div>
+        <div class="col-xs-4 description" spellcheck="false" contenteditable="true" data-content="description"></div>
+        <div class="col-xs-2 duration" data-content="duration"></div>
+        <div class="col-xs-2 action">
+            <button type="button" data-content="buttonContent"
+                    data-template-bind='[{"attribute": "data-task", "value": "id"},
+                        {"attribute": "class", "value": "buttonClass"}]'>
+            </button>
+        </div>
+    </div>
 </li>

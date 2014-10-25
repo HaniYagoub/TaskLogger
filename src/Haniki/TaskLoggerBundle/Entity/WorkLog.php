@@ -133,4 +133,17 @@ class WorkLog
     {
         return $this->duration;
     }
+
+    /**
+     * Get array version of the object
+     * @return array
+     */
+    public function toArray()
+    {
+        return array(
+            'id' => $this->id,
+            'startedAt' => $this->startedAt,
+            'duration' => $this->duration,
+        );
+    }
 }

@@ -3,26 +3,11 @@
 {% block title 'Task Logger - tasks' %}
 
 {% block content %}
-    <h2>{{date.format('Y-m-d')}}</h2>
+    <h2 id="log-date">{{date.format('Y-m-d')}}</h2>
 
-    <div>
-        <button type="button" class="btn btn-success" id="start_task_button" data-date="{{date.format('Y-m-d')}}">Start Task</button>
-    </div>
+    <button type="button" class="btn btn-block btn-success" id="start_task_button" data-date="{{date.format('Y-m-d')}}">Start Task</button>
 
-    <ul id="tasks">
-        {% for task in tasks %}
-            {% set workLog = task.getWorkLogs().last() %}
-            <li class="task" data-id='{{task.id}}'>
-                {{ task.getUpdatedAt().format('H:i') }} {{ task.getDescription() }}
-                {% if task.getWorkLogs().last().getDuration() is null %}
-                    <button id="stop_task_button" data-task="{{task.id}}">Stop Task</button>
-                {% else %}
-                    {{ workLog.getDuration().format('G:i') }}
-                    <button class="continue_task_button" data-task="{{task.id}}">Continue Task</button>
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+    <ul class="list-group" id="tasks"></ul>
 {% endblock %}
 
 {% block javascripts %}
