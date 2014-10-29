@@ -4,11 +4,10 @@ namespace Haniki\TaskLoggerBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 
-use Haniki\TaskLoggerBundle\Entity\Task;
-use Haniki\TaskLoggerBundle\Entity\WorkLog;
 
 class TaskLoggerController extends Controller
 {
@@ -33,24 +32,9 @@ class TaskLoggerController extends Controller
      */
     public function getTasksAction($date = null)
     {
-        $startedAt = new \DateTime();
-        $startedAt->setTimestamp(strtotime($date == null ? 'now': $date));
+        $taskRepository = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
 
-        $taskRepository = $this->getDoctrine()->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
-
-        $tasks = $taskRepository
-            ->createQueryBuilder('t')
-            ->select('t, w')
-            ->innerJoin('t.workLogs', 'w')
-            ->where('w.startedAt >= :start')
-            ->andWhere('w.startedAt <= :end')
-            ->setParameter('start', $startedAt->format('Y-m-d 00:00:00'))
-            ->setParameter('end', $startedAt->format('Y-m-d 24:59:59'))
-            ->orderBy('t.updatedAt', 'desc')
-            ->getQuery()
-            ->getArrayResult();
-
-        return new JsonResponse($tasks);
+        return new JsonResponse($taskRepository->getTasksByDate($date));
     }
 
     /**
@@ -61,12 +45,8 @@ class TaskLoggerController extends Controller
         $request = $this->getRequest();
 
         if ($request->isXmlHttpRequest() && $request->isMethod('POST')) {
-            $task = new Task();
-            $task->setDescription($request->get('description', ''));
-
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($task);
-            $entityManager->flush();
+            $taskRepository = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
+            $task = $taskRepository->createTask($request->get('description', ''));
 
             return new JsonResponse($task->toArray());
         }
@@ -82,30 +62,12 @@ class TaskLoggerController extends Controller
         $request = $this->getRequest();
 
         if ($request->isXmlHttpRequest() && $request->isMethod('POST')) {
-            //Retrieving the task
-            if(($taskId = $request->get('taskId', null)) != null) {
-                /* @var $task Task */
-                $task = $this->getDoctrine()
-                    ->getRepository('Haniki\TaskLoggerBundle\Entity\Task')
-                    ->find($taskId);
-
-                if (!$task) {
-                    return new JsonResponse(array(
-                        'error' => 'Aucune tâche trouvée pour cet id : '.$taskId
-                    ), 400);
-                }
-
-                $workLog = new WorkLog();
-                $task->addWorkLog($workLog);
-            } else {
-                return new JsonResponse(array(
-                    'error' => 'Aucune tâche ou log n\'a été spécifié'
-                ), 400);
+            $taskRepository = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
+            try {
+                $workLog = $taskRepository->createWorkLog($request->get('taskId', null));
+            } catch (Exception $e) {
+                return new JsonResponse(array('error' => $e->getMessage(), 400));
             }
-
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($task);
-            $entityManager->flush();
 
             return new JsonResponse($workLog->toArray());
         }
@@ -118,34 +80,14 @@ class TaskLoggerController extends Controller
      */
     public function stopTaskAction($id)
     {
-        $entityManager = $this->getDoctrine()->getManager();
-        /* @var \TaskLogger\TaskLoggerBundle\Entity\Task $task */
-        $task = $entityManager->getRepository('Haniki\TaskLoggerBundle\Entity\Task')->find($id);
-
-        if (!$task) {
-            throw $this->createNotFoundException("Aucune tâche n'a été trouvée pour cet id : $id");
+        $taskRepository = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
+        try {
+            $task = $taskRepository->stopTask($id);
+        } catch (Exception $e) {
+            return new JsonResponse(array('error' => $e->getMessage(), 400));
         }
 
-        foreach ($task->getWorkLogs() as $workLog) {
-            if (is_null($workLog->getDuration())) {
-                $interval = $workLog->getStartedAt()->diff(new \DateTime());
-                $workLog->setDuration((new \DateTime('midnight'))->add($interval));
-
-                $entityManager->persist($workLog);
-            }
-        }
-        $entityManager->flush();
-
-        $task = $entityManager->getRepository('Haniki\TaskLoggerBundle\Entity\Task')
-            ->createQueryBuilder('t')
-            ->select('t, w')
-            ->innerJoin('t.workLogs', 'w')
-            ->where('t.id >= :id')
-            ->setParameter('id', $id)
-            ->getQuery()
-            ->getArrayResult();
-
-        return new JsonResponse($task[0]);
+        return new JsonResponse($task);
     }
 
     /**
@@ -156,36 +98,30 @@ class TaskLoggerController extends Controller
         $request = $this->getRequest();
 
         if ($request->isXmlHttpRequest() && $request->isMethod('POST')) {
-            //Retrieving the task
-            if(($taskId = $request->get('pk', null)) != null) {
-                /* @var $task Task */
-                $task = $this->getDoctrine()
-                    ->getRepository('Haniki\TaskLoggerBundle\Entity\Task')
-                    ->find($taskId);
-
-                if (!$task) {
-                    return new JsonResponse(array(
-                        'error' => 'Aucune tâche trouvée pour cet id : '.$taskId
-                    ), 400);
-                }
-
-                $description = strip_tags($request->get('value', ''));
-                $task->setDescription($description);
-                $task->update();
-
-            } else {
-                return new JsonResponse(array(
-                    'error' => 'Aucune tâche n\'a été spécifiée'
-                ), 400);
+            $taskRepository = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
+            try {
+                $task = $taskRepository->updateTaskDescription(
+                    $request->get('pk', null),
+                    $request->get('value', null)
+                );
+            } catch (Exception $e) {
+                return new JsonResponse(array('error' => $e->getMessage(), 400));
             }
-
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($task);
-            $entityManager->flush();
 
             return new JsonResponse($task->getDescription());
         }
 
         return $this->redirect($this->generateUrl('show_tasks'));
+    }
+
+    /**
+     * Shortcut method returnng a repository from a namespace
+     * 
+     * @param string $namespace
+     * @return \Doctrine\ORM\EntityRepository
+     */
+    private function getRepository($namespace)
+    {
+        return $this->getDoctrine()->getManager()->getRepository($namespace);
     }
 }

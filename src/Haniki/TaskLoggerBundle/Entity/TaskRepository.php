@@ -4,6 +4,9 @@ namespace Haniki\TaskLoggerBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
 
+use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+
 /**
  * TaskRepository
  *
@@ -12,4 +15,164 @@ use Doctrine\ORM\EntityRepository;
  */
 class TaskRepository extends EntityRepository
 {
+    /**
+     * Get a task from an id, with workLogs hydrated
+     *
+     * @param integer $id
+     * @return Task
+     */
+    public function getTaskById($id)
+    {
+        return $this
+            ->createQueryBuilder('t')
+            ->select('t, w')
+            ->leftJoin('t.workLogs', 'w')
+            ->where('t.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+    /**
+     * Create a new Task with the given description
+     *
+     * @param string $description
+     * @return Task
+     */
+    public function createTask($description)
+    {
+        $task = new Task();
+        $task->setDescription($description);
+
+        $entityManager = $this->getEntityManager();
+        $entityManager->persist($task);
+        $entityManager->flush();
+
+        return $task;
+    }
+
+    /**
+     * Get tasks corresponding to the given date
+     *
+     * @param string $date
+     * @return array An array of Task objects
+     */
+    public function getTasksByDate($date = null)
+    {
+        $startedAt = new \DateTime();
+        $startedAt->setTimestamp(strtotime($date == null ? 'now': $date));
+
+        $tasks = $this
+            ->createQueryBuilder('t')
+            ->select('t, w')
+            ->innerJoin('t.workLogs', 'w')
+            ->where('w.startedAt >= :start')
+            ->andWhere('w.startedAt <= :end')
+            ->setParameter('start', $startedAt->format('Y-m-d 00:00:00'))
+            ->setParameter('end', $startedAt->format('Y-m-d 24:59:59'))
+            ->orderBy('t.updatedAt', 'desc')
+            ->getQuery()
+            ->getArrayResult();
+
+        return $tasks;
+    }
+
+    /**
+     * Create a new workLog for the given Task
+     *
+     * @param integer $taskId The task for which the workLog must be added
+     * @return WorkLog The WorkLog newly created
+     * @throws ResourceNotFoundException If No Task is found with the given taskId
+     * @throws MissingMandatoryParametersException If no taskId is specified
+     */
+    public function createWorkLog($taskId)
+    {
+        if($taskId != null) {
+            $task = $this->getTaskById($taskId);
+
+            if (!$task) {
+                throw new ResourceNotFoundException('No task found for this ID : ' . $taskId);
+            }
+
+            $workLog = new WorkLog();
+            $task->addWorkLog($workLog);
+        } else {
+            throw new MissingMandatoryParametersException('No task ID specified');
+        }
+
+        $entityManager = $this->getEntityManager();
+        $entityManager->persist($task);
+        $entityManager->flush();
+
+        return $workLog;
+    }
+
+    /**
+     * Stop a task from an id
+     *
+     * @param integer $taskId
+     * @return Task
+     * @throws ResourceNotFoundException If No Task is found with the given taskId
+     */
+    public function stopTask($taskId)
+    {
+        $task = $this->getTaskById($taskId);
+
+        if (!$task) {
+            throw new ResourceNotFoundException('No task found for this ID : ' . $taskId);
+        }
+
+        $entityManager = $this->getEntityManager();
+
+        foreach ($task->getWorkLogs() as $workLog) {
+            if (is_null($workLog->getDuration())) {
+                $interval = $workLog->getStartedAt()->diff(new \DateTime());
+                $workLog->setDuration((new \DateTime('midnight'))->add($interval));
+
+                $entityManager->persist($workLog);
+            }
+        }
+        $entityManager->flush();
+
+        $tasks = $this
+            ->createQueryBuilder('t')
+            ->select('t, w')
+            ->innerJoin('t.workLogs', 'w')
+            ->where('t.id >= :id')
+            ->setParameter('id', $taskId)
+            ->getQuery()
+            ->getArrayResult();
+
+        return isset($tasks[0]) ? $tasks[0] : null;
+    }
+
+    /**
+     * Update a task description from an id
+     *
+     * @param integer $taskId
+     * @param string $description
+     * @return Task
+     * @throws ResourceNotFoundException If No Task is found with the given taskId
+     * @throws MissingMandatoryParametersException If no taskId is specified
+     */
+    public function updateTaskDescription($taskId, $description)
+    {
+        if($taskId != null) {
+            $task = $this->find($taskId);
+
+            if (!$task) {
+                throw new ResourceNotFoundException('No task found for this ID : ' . $taskId);
+            }
+
+            $task->setDescription(strip_tags($description));
+            $task->update();
+        } else {
+            throw new MissingMandatoryParametersException('No task ID specified');
+        }
+
+        $entityManager = $this->getEntityManager();
+        $entityManager->persist($task);
+        $entityManager->flush();
+
+        return $task;
+    }
 }

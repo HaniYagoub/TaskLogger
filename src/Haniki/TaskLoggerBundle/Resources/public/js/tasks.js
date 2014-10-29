@@ -17,7 +17,7 @@ $(document).ready(function() {
     });
     $('#tasks').on('click', '.continue_task_button', function() {
         stopRunningTasks();
-        startWork($(this).data('task'));
+        startWork($(this).data('task'), false);
     });
 });
 
@@ -140,20 +140,20 @@ function createTask()
         method: 'post'
     }).done(function(task){
         tasks[task.id] = task;
-        startWork(task.id);
+        startWork(task.id, true);
     }).fail(function(){
         return false;
     });
 }
 
-function startWork(taskId)
+function startWork(taskId, showDescriptionForm)
 {
     $.ajax({
         url: Routing.generate('start_work', {taskId: taskId}),
         method: 'post'
     }).done(function(data){
         tasks[taskId].workLogs.push(data);
-        renderTask(tasks[taskId], true);
+        renderTask(tasks[taskId], showDescriptionForm);
         return true;
     }).fail(function(){
         return false;
