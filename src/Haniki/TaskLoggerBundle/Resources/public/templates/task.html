@@ -1,9 +1,9 @@
 <li class="task list-group-item" data-id="id">
     <div class="row">
-        <div class="col-xs-2 started-at" data-content="startedAt"></div>
-        <div class="col-xs-2 updated-at" data-content="updatedAt"></div>
-        <div class="col-xs-4 description" spellcheck="false" contenteditable="true" data-content="description"></div>
-        <div class="col-xs-2 duration" data-content="duration"></div>
+        <div class="col-xs-1"><div class="time-holder">Created at</div><div class="created-at" data-content="createdAt"></div></div>
+        <div class="col-xs-1"><div class="time-holder">Updated at</div><div class="updated-at" data-content="updatedAt"></div></div>
+        <div class="col-xs-6 description-holder"><span class="description" data-content="description"></span></div>
+        <div class="col-xs-2"><div class="time-holder">Duration</div><div class="duration" data-content="duration"></div></div>
         <div class="col-xs-2 action">
             <button type="button" data-content="buttonContent"
                     data-template-bind='[{"attribute": "data-task", "value": "id"},

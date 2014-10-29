@@ -157,7 +157,7 @@ class TaskLoggerController extends Controller
 
         if ($request->isXmlHttpRequest() && $request->isMethod('POST')) {
             //Retrieving the task
-            if(($taskId = $request->get('taskId', null)) != null) {
+            if(($taskId = $request->get('pk', null)) != null) {
                 /* @var $task Task */
                 $task = $this->getDoctrine()
                     ->getRepository('Haniki\TaskLoggerBundle\Entity\Task')
@@ -169,7 +169,7 @@ class TaskLoggerController extends Controller
                     ), 400);
                 }
 
-                $description = strip_tags($request->get('description', ''));
+                $description = strip_tags($request->get('value', ''));
                 $task->setDescription($description);
                 $task->update();
 
