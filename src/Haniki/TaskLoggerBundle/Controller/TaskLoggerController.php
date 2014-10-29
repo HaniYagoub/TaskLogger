@@ -15,7 +15,7 @@ class TaskLoggerController extends Controller
      * @Route("/", defaults={"date"=null})
      * @Route("/tasks", defaults={"date"=null})
      * @Route("/tasks/", defaults={"date"=null})
-     * @Route("/tasks/{date}", name="show_tasks")
+     * @Route("/tasks/{date}", name="show_tasks", options={"expose"=true})
      */
     public function showTasksAction($date = null)
     {
@@ -116,7 +116,7 @@ class TaskLoggerController extends Controller
 
     /**
      * Shortcut method returnng a repository from a namespace
-     * 
+     *
      * @param string $namespace
      * @return \Doctrine\ORM\EntityRepository
      */

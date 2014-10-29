@@ -8,6 +8,15 @@ $(document).ready(function() {
 
     initTasks();
 
+    $('#log-date').datepicker({
+        format: 'yyyy-mm-dd',
+        autoclose: true,
+        todayBtn: true,
+        todayHighlight: true
+    }).on('changeDate', function(e){
+        $('#log-date').html(e.format());
+        window.location.assign(Routing.generate('show_tasks', {date: e.format()}));
+    });
     $('#start_task_button').on('click', function() {
         stopRunningTasks();
         createTask();
@@ -18,6 +27,9 @@ $(document).ready(function() {
     $('#tasks').on('click', '.continue_task_button', function() {
         stopRunningTasks();
         startWork($(this).data('task'), false);
+        if (new Date(logDate).toDateString() !== new Date().toDateString()) {
+            window.location.assign(Routing.generate('show_tasks'));
+        }
     });
 });
 

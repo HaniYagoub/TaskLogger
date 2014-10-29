@@ -110,10 +110,11 @@ class TaskRepository extends EntityRepository
      * Stop a task from an id
      *
      * @param integer $taskId
+     * @param string $date
      * @return Task
      * @throws ResourceNotFoundException If No Task is found with the given taskId
      */
-    public function stopTask($taskId)
+    public function stopTask($taskId, $date = null)
     {
         $task = $this->getTaskById($taskId);
 
@@ -133,11 +134,17 @@ class TaskRepository extends EntityRepository
         }
         $entityManager->flush();
 
+        $startedAt = new \DateTime();
+        $startedAt->setTimestamp(strtotime($date == null ? 'now': $date));
         $tasks = $this
             ->createQueryBuilder('t')
             ->select('t, w')
             ->innerJoin('t.workLogs', 'w')
-            ->where('t.id >= :id')
+            ->where('t.id = :id')
+            ->andWhere('w.startedAt >= :start')
+            ->andWhere('w.startedAt <= :end')
+            ->setParameter('start', $startedAt->format('Y-m-d 00:00:00'))
+            ->setParameter('end', $startedAt->format('Y-m-d 24:59:59'))
             ->setParameter('id', $taskId)
             ->getQuery()
             ->getArrayResult();

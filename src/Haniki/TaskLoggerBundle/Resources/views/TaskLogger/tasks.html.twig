@@ -3,8 +3,6 @@
 {% block title 'Task Logger - tasks' %}
 
 {% block content %}
-    <h2 id="log-date">{{date.format('Y-m-d')}}</h2>
-
     <button type="button" class="btn btn-block btn-success" id="start_task_button" data-date="{{date.format('Y-m-d')}}">Start Task</button>
 
     <ul class="list-group" id="tasks"></ul>
