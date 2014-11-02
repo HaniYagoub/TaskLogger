@@ -4,10 +4,10 @@ namespace Haniki\TaskLoggerBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-
 
 class TaskLoggerController extends Controller
 {
@@ -109,6 +109,68 @@ class TaskLoggerController extends Controller
             }
 
             return new JsonResponse($task->getDescription());
+        }
+
+        return $this->redirect($this->generateUrl('show_tasks'));
+    }
+
+    /**
+     * @Route("/get-jira-issue", name="get_jira_issue", options={"expose"=true})
+     */
+    public function getJiraIssueAction()
+    {
+        $request = $this->getRequest();
+
+        if ($request->isXmlHttpRequest() && $request->isMethod('POST')) {
+            $task = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task')
+                ->find($request->get('taskId', null));
+            if ($task) {
+                $matches = array();
+                if (preg_match('/#[A-Za-z]+\-[0-9]+/', $task->getDescription(), $matches)) {
+                    $api = $this->get('jira_api');
+                    $issueKey = str_replace('#', '', $matches[0]);
+                    $issue = $api->getIssue($issueKey);
+                    return new JsonResponse($issue->getResult());
+                }
+            }
+
+            return new JsonResponse(array('error' => 'No Issue found'), 400);
+        }
+
+        return $this->redirect($this->generateUrl('show_tasks'));
+    }
+
+    /**
+     * @Route("/log-work-jira", name="log_work_jira", options={"expose"=true})
+     */
+    public function logWorkJiraAction()
+    {
+        $request = $this->getRequest();
+
+        if ($request->isXmlHttpRequest() && $request->isMethod('POST')) {
+            $taskId = $request->get('taskId', null);
+            /* @var $task \Haniki\TaskLoggerBundle\Entity\Task */
+            $task = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task')
+                ->getTaskById($taskId);
+            if ($task) {
+                $matches = array();
+                if (preg_match('/#[A-Za-z]+\-[0-9]+/', $task->getDescription(), $matches)) {
+                    $api = $this->get('jira_api');
+                    $issueKey = str_replace('#', '', $matches[0]);
+
+                    $params = array(
+                        "started" => str_replace('+', '.000+', $task->getWorkLogs()->last()->getStartedAt()->format(\DateTime::ISO8601)),
+                        "comment" => $task->getDescription(),
+                        "timeSpent" => $task->getDuration(),
+                    );
+
+                    //die(var_dump(json_encode($params)));
+                    $issue = $api->addLog($issueKey, $params);
+                    return new JsonResponse($issue->getResult());
+                }
+            }
+
+            return new JsonResponse(array('error' => 'No Issue found'), 400);
         }
 
         return $this->redirect($this->generateUrl('show_tasks'));

@@ -226,11 +226,11 @@ class Task
         $duration = 0;
         foreach ($this->workLogs as $workLog) {
             if (null != $workLog->getDuration()) {
-                $duration += eval($workLog->getDuration('H*60*60+i*60+m'));
+                eval('$duration += ' . $workLog->getDuration()->format('H*60*60+i*60+s') . ';');
             }
         }
-
-        return $duration;
+        $d = date('G\h i\m', mktime(0, 0, $duration));
+        return $d;
     }
 
     /**

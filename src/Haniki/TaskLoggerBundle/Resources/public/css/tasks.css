@@ -32,3 +32,11 @@
 .editable-container.editable-inline .editableform .form-control {
     width: 400px;
 }
+
+.jira_issue_button {
+    width: 58px;
+}
+
+.stop_task_button {
+    width: 99px;
+}

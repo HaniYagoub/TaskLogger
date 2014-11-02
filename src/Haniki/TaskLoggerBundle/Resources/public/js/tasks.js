@@ -31,6 +31,15 @@ $(document).ready(function() {
             window.location.assign(Routing.generate('show_tasks'));
         }
     });
+    $('#tasks').on('click', '.jira_issue_button', function(){
+        getJiraIssue($(this).data('task'));
+    });
+    $('#log-jira-work-button').on('click', function(){
+        logWorkJira($(this).data('task'));
+    });
+    $('#main').on('click', '.btn-loading', function(){
+        $(this).button('loading');
+    });
 });
 
 function initTasks()
@@ -68,7 +77,9 @@ function initDescription(taskId, showDescriptionForm)
 function renderTasks()
 {
     tasks.forEach(function(task){
-        renderTask(task);
+        if (task !== undefined && task.id !== undefined) {
+            renderTask(task);
+        }
     });
 }
 
@@ -77,33 +88,36 @@ function renderTask(task, showDescriptionForm)
     showDescriptionForm = (showDescriptionForm !== undefined) && showDescriptionForm;
 
     var buttonContent = 'Continue Task';
-    var buttonClass = 'btn btn-xs btn-primary continue_task_button';
+    var buttonClass = 'btn btn-sm btn-info btn-loading continue_task_button';
 
-    if (task.workLogs[task.workLogs.length - 1] === undefined || task.workLogs[task.workLogs.length - 1].duration === null) {
-        buttonContent = 'Stop Task';
-        buttonClass = 'btn btn-xs btn-danger stop_task_button';
+    if (task.workLogs !== undefined) {
+        if (task.workLogs[task.workLogs.length - 1] === undefined || task.workLogs[task.workLogs.length - 1].duration === null) {
+            buttonContent = 'Stop Task';
+            buttonClass = 'btn btn-sm btn-danger btn-loading stop_task_button';
+        }
     }
 
     var durationTime = secondsToTime(getTaskDuration(task));
 
     removeTask(task.id);
-
-    $("#tasks").loadTemplate("/bundles/hanikitasklogger/templates/task.html", {
-        id: task.id,
-        createdAt: new Date(task.createdAt.date).toLocaleTimeString(),
-        updatedAt: new Date(task.updatedAt.date).toLocaleTimeString(),
-        description: task.description,
-        duration: durationTime,
-        buttonContent: buttonContent,
-        buttonClass: buttonClass
-    }, {
-        prepend: true,
-        success: function() {
-            initDescription(task.id, showDescriptionForm);
-            sortTasks();
-        }
-        //overwriteCache: true
-    });
+    if (task.createdAt !== undefined && task.updatedAt !== undefined) {
+        $("#tasks").loadTemplate("/bundles/hanikitasklogger/templates/task.html", {
+            id: task.id,
+            createdAt: new Date(task.createdAt.date).toLocaleTimeString(),
+            updatedAt: new Date(task.updatedAt.date).toLocaleTimeString(),
+            description: task.description,
+            duration: durationTime,
+            buttonContent: buttonContent,
+            buttonClass: buttonClass
+        }, {
+            prepend: true,
+            success: function() {
+                initDescription(task.id, showDescriptionForm);
+                sortTasks();
+            }
+            //overwriteCache: true
+        });
+    }
 }
 
 function removeTask(taskId)
@@ -169,11 +183,16 @@ function startWork(taskId, showDescriptionForm)
         return true;
     }).fail(function(){
         return false;
+    }).always(function(){
+        $('#start_task_button').button('reset');
     });
 }
 
 function isTaskRunning(task)
 {
+    if (task.workLogs === undefined) {
+        return false;
+    }
     var length = task.workLogs.length;
     return task.workLogs[length - 1] === undefined || task.workLogs[length - 1].duration === null;
 }
@@ -200,18 +219,55 @@ function refreshTaskDuration()
 function getTaskDuration(task)
 {
     var duration = 0;
-    task.workLogs.forEach(function(workLog){
-        if (workLog.duration !== null) {
-            var d = new Date(workLog.duration.date);
-            duration += d.getHours()*60*60+d.getMinutes()*60+d.getSeconds();
-        } else {
-            var startedAt = new Date(workLog.startedAt.date);
-            var d = new Date();
-            duration += parseInt((d - startedAt)/1000);
-        }
-    });
+    if (task.workLogs !== undefined) {
+        task.workLogs.forEach(function(workLog){
+            if (workLog.duration !== null) {
+                var d = new Date(workLog.duration.date);
+                duration += d.getHours()*60*60+d.getMinutes()*60+d.getSeconds();
+            } else {
+                var startedAt = new Date(workLog.startedAt.date);
+                var d = new Date();
+                duration += parseInt((d - startedAt)/1000);
+            }
+        });
+    }
 
     return duration;
+}
+
+function getJiraIssue(taskId)
+{
+    $.ajax({
+        url: Routing.generate('get_jira_issue', {taskId: taskId}),
+        method: 'post'
+    }).done(function(data){
+        $('#jira-modal .modal-title').html(data.key + ' : ' + data.fields.summary);
+        $('#jira-modal .modal-body .modal-description').html(data.fields.description);
+        $('#jira-modal .modal-body .modal-worklogs').html('Duration : ' + secondsToTime(getTaskDuration(tasks[taskId])) + '<br />Description : '+tasks[taskId].description);
+        $('#jira-modal #log-jira-work-button').attr('data-task', taskId);
+        $('#jira-modal').modal();
+        return true;
+    }).fail(function(data){
+        $('#jira-modal .modal-title').html('Error');
+        $('#jira-modal .modal-body .modal-description').html(data.responseJSON.error);
+        return true;
+    }).always(function(){
+        $('.jira_issue_button[data-task="'+taskId+'"]').button('reset');
+    });
+}
+
+function logWorkJira(taskId)
+{
+    stopTask(taskId);
+    $.ajax({
+        url: Routing.generate('log_work_jira', {taskId: taskId}),
+        method: 'post'
+    }).done(function(data){
+        console.log(data);
+        return true;
+    }).fail(function(data){
+        return true;
+    });
 }
 
 function secondsToTime(seconds)

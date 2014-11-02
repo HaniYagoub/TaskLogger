@@ -3,9 +3,11 @@
 {% block title 'Task Logger - tasks' %}
 
 {% block content %}
-    <button type="button" class="btn btn-block btn-success" id="start_task_button" data-date="{{date.format('Y-m-d')}}">Start Task</button>
+    <button type="button" class="btn btn-block btn-success btn-loading" id="start_task_button" data-date="{{date.format('Y-m-d')}}">Start Task</button>
 
     <ul class="list-group" id="tasks"></ul>
+
+    {% include 'HanikiTaskLoggerBundle:TaskLogger:jira_modal.html.twig' %}
 {% endblock %}
 
 {% block javascripts %}
