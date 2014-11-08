@@ -1,7 +1,7 @@
 services:
     jira_basic:
-        class: chobie\Jira\Api\Authentication\Basic
+        class: JiraRestClient\Api\Authentication\Basic
         arguments: [%jira_username%, %jira_password%]
     jira_api:
-        class: chobie\Jira\Api
+        class: JiraRestClient\Api
         arguments: [%jira_url%, "@jira_basic"]

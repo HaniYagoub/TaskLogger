@@ -1,11 +1,19 @@
 {
-    "name": "symfony/framework-standard-edition",
+    "name": "TaskLogger",
     "license": "MIT",
     "type": "project",
-    "description": "The \"Symfony Standard Edition\" distribution",
+    "description": "A simple Task Logger system",
     "autoload": {
         "psr-0": { "": "src/", "SymfonyStandard": "app/" }
     },
+
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/haniyagoub/jira-api-restclient"
+        }
+    ],
+
     "require": {
         "php": ">=5.3.3",
         "symfony/symfony": "2.5.*",
@@ -18,8 +26,8 @@
         "sensio/distribution-bundle": "~3.0",
         "sensio/framework-extra-bundle": "~3.0",
         "incenteev/composer-parameter-handler": "~2.0",
-        "friendsofsymfony/jsrouting-bundle": "@stable",
-        "chobie/jira-api-restclient": "dev-master"
+        "friendsofsymfony/jsrouting-bundle": "1.5.3",
+        "haniyagoub/jira-api-restclient": "dev-master"
     },
     "require-dev": {
         "sensio/generator-bundle": "~2.3"
