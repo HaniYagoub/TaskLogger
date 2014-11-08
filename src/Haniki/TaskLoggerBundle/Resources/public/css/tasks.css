@@ -33,6 +33,12 @@
     width: 400px;
 }
 
+button span.refresh {
+    margin-right: 3px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
 .jira_issue_button {
     width: 58px;
 }

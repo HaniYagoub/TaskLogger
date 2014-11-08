@@ -31,15 +31,11 @@ $(document).ready(function() {
             window.location.assign(Routing.generate('show_tasks'));
         }
     });
-    $('#tasks').on('click', '.jira_issue_button', function(){
-        getJiraIssue($(this).data('task'));
-    });
-    $('#log-jira-work-button').on('click', function(){
-        logWorkJira($(this).data('task'));
-    });
     $('#main').on('click', '.btn-loading', function(){
         $(this).button('loading');
     });
+
+    initJiraActions();
 });
 
 function initTasks()
@@ -235,41 +231,6 @@ function getTaskDuration(task)
     return duration;
 }
 
-function getJiraIssue(taskId)
-{
-    $.ajax({
-        url: Routing.generate('get_jira_issue', {taskId: taskId}),
-        method: 'post'
-    }).done(function(data){
-        $('#jira-modal .modal-title').html(data.key + ' : ' + data.fields.summary);
-        $('#jira-modal .modal-body .modal-description').html(data.fields.description);
-        $('#jira-modal .modal-body .modal-worklogs').html('Duration : ' + secondsToTime(getTaskDuration(tasks[taskId])) + '<br />Description : '+tasks[taskId].description);
-        $('#jira-modal #log-jira-work-button').attr('data-task', taskId);
-        $('#jira-modal').modal();
-        return true;
-    }).fail(function(data){
-        $('#jira-modal .modal-title').html('Error');
-        $('#jira-modal .modal-body .modal-description').html(data.responseJSON.error);
-        return true;
-    }).always(function(){
-        $('.jira_issue_button[data-task="'+taskId+'"]').button('reset');
-    });
-}
-
-function logWorkJira(taskId)
-{
-    stopTask(taskId);
-    $.ajax({
-        url: Routing.generate('log_work_jira', {taskId: taskId}),
-        method: 'post'
-    }).done(function(data){
-        console.log(data);
-        return true;
-    }).fail(function(data){
-        return true;
-    });
-}
-
 function secondsToTime(seconds)
 {
     var time = new Date(seconds*1000);
@@ -294,4 +255,12 @@ function sortTasks()
         var d2 = new Date('1970-01-01T' + $(b).find('.updated-at').html()).toTimeString();
         return  d1 < d2 ? 1 : -1;
     });
+}
+
+function resetButtons()
+{
+    console.log('reset buttons');
+    $('.btn-loading').removeClass('disabled');
+    $('.btn-loading').removeAttr('disabled');
+    $('.btn-loading').button('reset');
 }
