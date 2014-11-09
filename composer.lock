@@ -676,7 +676,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/haniyagoub/jira-api-restclient",
-                "reference": "46fc953691a35e8e9ba79370d4360073dc9fa2d0"
+                "reference": "e057337ee38dbdcaa50b8bd9faeb68d7b13d3fb7"
             },
             "require": {
                 "php": ">=5.3.0"
@@ -715,7 +715,7 @@
                 "jira",
                 "rest"
             ],
-            "time": "2014-11-08 12:14:21"
+            "time": "2014-11-09 20:24:59"
         },
         {
             "name": "incenteev/composer-parameter-handler",

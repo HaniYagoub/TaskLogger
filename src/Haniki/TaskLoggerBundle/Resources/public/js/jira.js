@@ -32,7 +32,8 @@ function displayJiraModal(data, taskId)
 {
     $('#jira-modal .modal-title').html(data.key + ' : ' + data.fields.summary);
     $('#jira-modal .modal-body .modal-description').html(data.fields.description);
-    $('#jira-modal .modal-body .modal-worklogs').html('Duration : ' + secondsToTime(getTaskDuration(tasks[taskId])) + '<br />Description : '+tasks[taskId].description);
+    $('#jira-modal .modal-body .modal-worklog-duration').html(secondsToTime(getTaskDuration(tasks[taskId])));
+    $('#jira-modal .modal-body .modal-worklog-comment').val(tasks[taskId].description);
     $('#jira-modal #log-jira-work-button').attr('data-task', taskId);
     $('#jira-modal #refresh-jira-issue').attr('data-task', taskId);
     $('#jira-modal').modal();
@@ -45,14 +46,18 @@ function logWorkJira(taskId)
 {
     stopTask(taskId);
     $.ajax({
-        url: Routing.generate('log_work_jira', {taskId: taskId}),
+        url: Routing.generate('log_work_jira'),
+        data: {
+            taskId: taskId,
+            comment: $('#jira-worklog-comment').val()
+        },
         method: 'post'
-    }).done(function(data){
-        console.log(data);
+    }).done(function(){
+        $('#jira-modal').modal("hide");
         return true;
     }).fail(function(data){
         console.log(data);
-        return true;
+        return false;
     }).always(function(){
         $('#log-jira-work-button').button('reset');
     });

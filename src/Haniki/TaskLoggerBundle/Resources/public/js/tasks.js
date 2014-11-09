@@ -21,16 +21,21 @@ $(document).ready(function() {
         stopRunningTasks();
         createTask();
     });
-    $('#tasks').on('click', '.task', function() {
-        $(this).toggleClass('selected');
-        if ($('.task.selected').length >= 2) {
-            $('#merge-task-button').removeClass('hidden');
-        } else {
-            $('#merge-task-button').addClass('hidden');
+    $('#tasks').on('click', '.task', function(e) {
+        if (! $(e.target).is('button')) {
+            $(this).toggleClass('selected');
+            if ($('.task.selected').length >= 2) {
+                $('#merge-task-button').removeClass('hidden');
+            } else {
+                $('#merge-task-button').addClass('hidden');
+            }
         }
     });
+    $('#main').on('click', '.btn-loading', function(){
+        $(this).button('loading');
+    });
     $('#tasks').on('click', '.task button', function(e) {
-        e.stopPropagation();
+        //e.stopPropagation();
     });
     $('#tasks').on('click', '.stop_task_button', function() {
         stopRunningTasks();
@@ -44,9 +49,6 @@ $(document).ready(function() {
     });
     $('#merge-task-button').on('click', function() {
         mergeTasks();
-    });
-    $('#main').on('click', '.btn-loading', function(){
-        $(this).button('loading');
     });
 
     initJiraActions();

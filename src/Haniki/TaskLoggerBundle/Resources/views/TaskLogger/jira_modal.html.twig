@@ -13,7 +13,17 @@
         <hr />
 
         <h4>WorkLog</h4>
-        <p class="modal-worklogs"></p>
+            <form role="form">
+                <div class="form-group">
+                    <label>Duration : </label>
+                    <span class="modal-worklog-duration"></span>
+                </div>
+                <div class="form-group">
+                    <label for="modal-worklog-description">Description : </label>
+                    <textarea class="modal-worklog-comment form-control" id="jira-worklog-comment">
+                    </textarea>
+                </div>
+            </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

@@ -201,10 +201,10 @@ class TaskLoggerController extends Controller
                 if (preg_match('/#[A-Za-z]+\-[0-9]+/', $task->getDescription(), $matches)) {
                     $api = $this->get('jira_api');
                     $issueKey = str_replace('#', '', $matches[0]);
-
+                    $comment = $request->get('comment', $task->getDescription());
                     $params = array(
                         "started" => str_replace('+', '.000+', $task->getWorkLogs()->last()->getStartedAt()->format(\DateTime::ISO8601)),
-                        "comment" => $task->getDescription(),
+                        "comment" => $comment,
                         "timeSpent" => $task->getDuration(),
                     );
 
