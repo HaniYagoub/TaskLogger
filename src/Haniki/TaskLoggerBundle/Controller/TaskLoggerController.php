@@ -114,6 +114,51 @@ class TaskLoggerController extends Controller
     }
 
     /**
+     * @Route("/merge-tasks", name="merge_tasks", options={"expose"=true})
+     */
+    public function mergeTasksAction()
+    {
+        $request = $this->getRequest();
+
+        if ($request->isXmlHttpRequest() && $request->isMethod('POST')) {
+            $tasksIds = $request->get('tasksIds', array());
+
+            if (count($tasksIds) < 2) {
+                return new JsonResponse(array('error' => 'Not enough tasks given for merge', 400));
+            }
+
+            $taskRepository = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
+            $tasks = array();
+
+            foreach ($tasksIds as $taskId) {
+                $tasks[$taskId] = $taskRepository->getTaskById($taskId);
+            }
+
+            /* @var $mergedTask \Haniki\TaskLoggerBundle\Entity\Task */
+            $mergedTask = array_pop($tasks);
+            if (null == $mergedTask) {
+                return new JsonResponse(array('error' => 'Task not found', 400));
+            }
+
+            $em = $this->getDoctrine()->getManager();
+
+            foreach($tasks as $taskId => $task) {
+                /* @var $task \Haniki\TaskLoggerBundle\Entity\Task */
+                $mergedTask->setDescription($mergedTask->getDescription() . ' + ' . $task->getDescription());
+                foreach ($task->getWorkLogs() as $workLog) {
+                    $mergedTask->addWorkLog($workLog);
+                }
+                $em->remove($task);
+            }
+            $em->flush();
+
+            return new JsonResponse($taskRepository->getTaskAsArray($mergedTask->getId()));
+        }
+
+        return $this->redirect($this->generateUrl('show_tasks'));
+    }
+
+    /**
      * @Route("/get-jira-issue", name="get_jira_issue", options={"expose"=true})
      */
     public function getJiraIssueAction()

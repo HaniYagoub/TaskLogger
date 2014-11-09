@@ -1,5 +1,3 @@
-var workLogs = [];
-
 var startTime = 9 * 60 * 60; //Début à 9h
 var endTime = 21 * 60 * 60; //Fin à 21h
 

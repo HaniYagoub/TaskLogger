@@ -32,6 +32,27 @@ class TaskRepository extends EntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * Get a task from an id, with workLogs hydrated as an array
+     *
+     * @param integer $id
+     * @return array
+     */
+    public function getTaskAsArray($id)
+    {
+        $task = $this
+            ->createQueryBuilder('t')
+            ->select('t, w')
+            ->leftJoin('t.workLogs', 'w')
+            ->where('t.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getArrayResult();
+
+        return count($task) > 0 ? $task[0] : array();
+    }
+
     /**
      * Create a new Task with the given description
      *
