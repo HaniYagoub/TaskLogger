@@ -2,6 +2,22 @@
     cursor: pointer;
 }
 
+#chronobar .progress-bar {
+    position: absolute;
+    height: 20px;
+}
+
+#chronobar .progress-bar.highlight {
+    background: rgba(255, 230, 0, 0.5);
+}
+
+
+.total-worked-time-label {
+    font-size: 11px;
+    font-style: italic;
+    color: grey;
+}
+
 #start_task_button {
     border-radius: 4px 4px 0 0;
 }
@@ -12,6 +28,10 @@
 
 .task {
     padding: 5px 10px;
+}
+
+.task.highlight {
+    background: rgba(255, 230, 0, 0.5);
 }
 
 .task .time-holder {

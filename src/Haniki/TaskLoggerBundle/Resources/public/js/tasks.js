@@ -4,7 +4,7 @@ var logDate,
 
 $(document).ready(function() {
     logDate = $('#log-date').html();
-    interval = setInterval(refreshTaskDuration, 1000);
+    interval = setInterval(refreshCounters, 1000);
 
     initTasks();
 
@@ -46,9 +46,16 @@ function initTasks()
         })
     }).done(function(data){
         data.forEach(function(task){
-           tasks[task.id] = task;
+            if (task.workLogs !== undefined) {
+                task.workLogs.forEach(function(workLog) {
+                    workLog.taskId = task.id;
+                });
+            }
+            tasks[task.id] = task;
         });
         renderTasks();
+        refreshTotalTime();
+        initChronobar();
     });
 }
 
@@ -174,6 +181,7 @@ function startWork(taskId, showDescriptionForm)
         url: Routing.generate('start_work', {taskId: taskId}),
         method: 'post'
     }).done(function(data){
+        data.taskId = taskId;
         tasks[taskId].workLogs.push(data);
         renderTask(tasks[taskId], showDescriptionForm);
         return true;
@@ -204,12 +212,28 @@ function getRunningTask()
     return result;
 }
 
-function refreshTaskDuration()
+function refreshCounters()
 {
     var task = getRunningTask();
     if (task !== false) {
-        $('.task#'+task.id).find('.duration').html(secondsToTime(getTaskDuration(task)));
+        refreshTaskDuration(task);
+        refreshTotalTime();
+        refreshProgressBar(task);
     }
+}
+
+function refreshTaskDuration(task)
+{
+    $('.task#'+task.id).find('.duration').html(secondsToTime(getTaskDuration(task)));
+}
+
+function refreshTotalTime()
+{
+    var totalTime = 0;
+    tasks.forEach(function(task){
+        totalTime += getTaskDuration(task);
+    });
+    $('#total-worked-time').html(secondsToTime(totalTime));
 }
 
 function getTaskDuration(task)
@@ -217,18 +241,28 @@ function getTaskDuration(task)
     var duration = 0;
     if (task.workLogs !== undefined) {
         task.workLogs.forEach(function(workLog){
-            if (workLog.duration !== null) {
-                var d = new Date(workLog.duration.date);
-                duration += d.getHours()*60*60+d.getMinutes()*60+d.getSeconds();
-            } else {
-                var startedAt = new Date(workLog.startedAt.date);
-                var d = new Date();
-                duration += parseInt((d - startedAt)/1000);
-            }
+            duration += getWorkLogDuration(workLog);
         });
     }
 
     return duration;
+}
+
+function getWorkLogDuration(workLog)
+{
+    if (workLog.duration !== null) {
+        var d = new Date(workLog.duration.date);
+        return dateToSeconds(d);
+    } else {
+        var startedAt = new Date(workLog.startedAt.date);
+        var d = new Date();
+        return parseInt((d - startedAt)/1000);
+    }
+}
+
+function dateToSeconds(date)
+{
+    return date.getHours()*60*60+date.getMinutes()*60+date.getSeconds();
 }
 
 function secondsToTime(seconds)

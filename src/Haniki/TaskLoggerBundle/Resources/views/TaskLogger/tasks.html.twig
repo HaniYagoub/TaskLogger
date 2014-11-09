@@ -3,6 +3,12 @@
 {% block title 'Task Logger - tasks' %}
 
 {% block content %}
+
+    <div class="progress" id="chronobar"></div>
+    <p class="text-right">
+        <span class="total-worked-time-label">Total Worked Time :</span> <span id="total-worked-time" class="badge"></span>
+    </p>
+
     <button type="button" class="btn btn-block btn-success btn-loading" id="start_task_button" data-date="{{date.format('Y-m-d')}}">Start Task</button>
 
     <ul class="list-group" id="tasks"></ul>
@@ -15,4 +21,5 @@
 
     <script src="{{ asset('bundles/hanikitasklogger/js/tasks.js') }}"></script>
     <script src="{{ asset('bundles/hanikitasklogger/js/jira.js') }}"></script>
+    <script src="{{ asset('bundles/hanikitasklogger/js/chronobar.js') }}"></script>
 {% endblock %}
