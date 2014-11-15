@@ -2,6 +2,10 @@
     cursor: pointer;
 }
 
+#chronobar {
+    position: relative;
+}
+
 #chronobar .progress-bar {
     position: absolute;
     height: 20px;

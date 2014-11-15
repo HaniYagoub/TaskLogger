@@ -27,7 +27,9 @@
         "sensio/framework-extra-bundle": "~3.0",
         "incenteev/composer-parameter-handler": "~2.0",
         "friendsofsymfony/jsrouting-bundle": "1.5.3",
-        "haniyagoub/jira-api-restclient": "dev-master"
+        "haniyagoub/jira-api-restclient": "dev-master",
+        "friendsofsymfony/user-bundle": "dev-master",
+        "jms/security-extra-bundle": "dev-master"
     },
     "require-dev": {
         "sensio/generator-bundle": "~2.3"

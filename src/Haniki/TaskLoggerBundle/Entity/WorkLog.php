@@ -19,7 +19,7 @@ class WorkLog
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    protected $id;
 
     /**
      * @var Task
@@ -33,21 +33,21 @@ class WorkLog
      *      referencedColumnName="id"
      * )
      */
-    private $task;
+    protected $task;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="startedAt", type="datetime")
      */
-    private $startedAt;
+    protected $startedAt;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="duration", type="time", nullable=true)
      */
-    private $duration;
+    protected $duration;
 
     public function __construct()
     {

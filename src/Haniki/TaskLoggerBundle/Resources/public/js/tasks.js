@@ -22,7 +22,7 @@ $(document).ready(function() {
         createTask();
     });
     $('#tasks').on('click', '.task', function(e) {
-        if (! $(e.target).is('button')) {
+        if (! $(e.target).is('button') && !$(e.target).hasClass('editable-click')) {
             $(this).toggleClass('selected');
             if ($('.task.selected').length >= 2) {
                 $('#merge-task-button').removeClass('hidden');
@@ -33,9 +33,6 @@ $(document).ready(function() {
     });
     $('#main').on('click', '.btn-loading', function(){
         $(this).button('loading');
-    });
-    $('#tasks').on('click', '.task button', function(e) {
-        //e.stopPropagation();
     });
     $('#tasks').on('click', '.stop_task_button', function() {
         stopRunningTasks();

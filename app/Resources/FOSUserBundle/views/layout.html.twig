@@ -1,0 +1,12 @@
+{% extends "HanikiTaskLoggerBundle::layout.html.twig" %}
+
+
+{% block stylesheets %}
+    {{ parent() }}
+
+    <link href="{{ asset('bundles/hanikitasklogger/css/security.css') }}" type="text/css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+    {% block fos_user_content %}{% endblock %}
+{% endblock %}

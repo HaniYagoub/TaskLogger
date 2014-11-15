@@ -1,0 +1,43 @@
+{% extends "FOSUserBundle::layout.html.twig" %}
+
+{% trans_default_domain 'FOSUserBundle' %}
+
+{% block fos_user_content %}
+    <div class="container form-security form-register">
+        <form action="{{ path("fos_user_registration_register") }}" {{ form_enctype(form) }} method="post" id="register" class="fos_user_registration_form" role="form">
+            <h2 class="form-signin-heading">Please Sign Up</h2>
+
+            <fieldset>
+                {{ form_errors(form) }}
+                {{ form_errors(form.email) }}
+                {{ form_errors(form.username) }}
+                {{ form_errors(form.plainPassword.first) }}
+                {{ form_errors(form.plainPassword.second) }}
+                <label for="email" class="sr-only">{{ 'security.login.email'|trans }}</label>
+                <input type="email" class="form-control" placeholder="{{ 'form.email'|trans }}" id="{{ form.email.vars.id }}" name="fos_user_registration_form[email]" value="{{ form.email.vars.value }}" required="required" autofocus />
+
+                <label for="username" class="sr-only">{{ 'security.login.username'|trans }}</label>
+                <input type="text" class="form-control" placeholder="{{ 'security.login.username'|trans }}" id="{{ form.username.vars.id }}" name="fos_user_registration_form[username]" value="{{ form.username.vars.value }}" required="required" pattern=".{2,}" />
+
+                <label for="password" class="sr-only">{{ 'security.login.password'|trans }}</label>
+                <input type="password" class="form-control" id="{{ form.plainPassword.first.vars.id }}" name="{{ form.plainPassword.first.vars.full_name }}" value="{{ form.plainPassword.first.vars.value }}" placeholder="{{ 'security.login.password'|trans }}" required="required" />
+
+                <label for="password" class="sr-only">{{ 'security.login.verification'|trans }}</label>
+                <input type="password" class="form-control" id="{{ form.plainPassword.second.vars.id }}" name="{{ form.plainPassword.second.vars.full_name }}" value="{{ form.plainPassword.second.vars.value }}" placeholder="{{ 'form.password_confirmation'|trans }}" required="required" />
+
+                <button type="submit" id="_submit" name="_submit" class="btn btn-lg btn-primary btn-block">
+                    {{ 'registration.submit'|trans }}
+                </button>
+
+                {{ form_widget(form._token) }}
+            </fieldset>
+        </form>
+
+        <hr />
+
+        <p class="form-footer">
+            Already registered ?
+            <a href="{{ path('fos_user_security_login') }}">Back To Login.</a>
+        </p>
+    </div> <!-- /container -->
+{% endblock %}

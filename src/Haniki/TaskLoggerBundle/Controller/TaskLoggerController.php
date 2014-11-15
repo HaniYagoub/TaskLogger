@@ -8,6 +8,11 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 
+use JMS\SecurityExtraBundle\Annotation\PreAuthorize;
+
+/**
+ * @PreAuthorize("isAuthenticated()")
+ */
 class TaskLoggerController extends Controller
 {
     /**
@@ -32,8 +37,9 @@ class TaskLoggerController extends Controller
     public function getTasksAction($date = null)
     {
         $taskRepository = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
+        $user = $this->getUser();
 
-        return new JsonResponse($taskRepository->getTasksByDate($date));
+        return new JsonResponse($taskRepository->getTasksByDate($user->getId(), $date));
     }
 
     /**
@@ -45,7 +51,10 @@ class TaskLoggerController extends Controller
 
         if ($request->isXmlHttpRequest() && $request->isMethod('POST')) {
             $taskRepository = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
-            $task = $taskRepository->createTask($request->get('description', ''));
+            $task = $taskRepository->createTask(
+                $this->getUser(),
+                $request->get('description', '')
+            );
 
             return new JsonResponse($task->toArray());
         }
@@ -63,7 +72,10 @@ class TaskLoggerController extends Controller
         if ($request->isXmlHttpRequest() && $request->isMethod('POST')) {
             $taskRepository = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
             try {
-                $workLog = $taskRepository->createWorkLog($request->get('taskId', null));
+                $workLog = $taskRepository->createWorkLog(
+                    $this->getUser(),
+                    $request->get('taskId', null)
+                );
             } catch (Exception $e) {
                 return new JsonResponse(array('error' => $e->getMessage(), 400));
             }
@@ -81,7 +93,7 @@ class TaskLoggerController extends Controller
     {
         $taskRepository = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
         try {
-            $task = $taskRepository->stopTask($id);
+            $task = $taskRepository->stopTask($this->getUser(), $id);
         } catch (Exception $e) {
             return new JsonResponse(array('error' => $e->getMessage(), 400));
         }
@@ -100,6 +112,7 @@ class TaskLoggerController extends Controller
             $taskRepository = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
             try {
                 $task = $taskRepository->updateTaskDescription(
+                    $this->getUser(),
                     $request->get('pk', null),
                     $request->get('value', null)
                 );
@@ -129,9 +142,13 @@ class TaskLoggerController extends Controller
 
             $taskRepository = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task');
             $tasks = array();
+            $user = $this->getUser();
 
             foreach ($tasksIds as $taskId) {
                 $tasks[$taskId] = $taskRepository->getTaskById($taskId);
+                if ($tasks[$taskId]->getUser()->getId() != $user->getId()) {
+                    return new JsonResponse(array('error' => 'You have no right to access this resource', 403));
+                }
             }
 
             /* @var $mergedTask \Haniki\TaskLoggerBundle\Entity\Task */
@@ -167,15 +184,18 @@ class TaskLoggerController extends Controller
 
         if ($request->isXmlHttpRequest() && $request->isMethod('POST')) {
             $task = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task')
-                ->find($request->get('taskId', null));
-            if ($task) {
-                $matches = array();
-                if (preg_match('/#[A-Za-z]+\-[0-9]+/', $task->getDescription(), $matches)) {
-                    $api = $this->get('jira_api');
-                    $issueKey = str_replace('#', '', $matches[0]);
-                    $issue = $api->getIssue($issueKey);
-                    return new JsonResponse($issue->getResult());
-                }
+                ->getTaskById($request->get('taskId', null));
+            if (!$task) {
+                return new JsonResponse(array('error' => 'Task not found', 400));
+            } elseif ($task->getUser()->getId() != $this->getUser()->getId()) {
+                return new JsonResponse(array('error' => 'You have no right to access this resource', 403));
+            }
+            $matches = array();
+            if (preg_match('/#[A-Za-z]+\-[0-9]+/', $task->getDescription(), $matches)) {
+                $api = $this->get('jira_api');
+                $issueKey = str_replace('#', '', $matches[0]);
+                $issue = $api->getIssue($issueKey);
+                return new JsonResponse($issue->getResult());
             }
 
             return new JsonResponse(array('error' => 'No Issue found'), 400);
@@ -196,21 +216,36 @@ class TaskLoggerController extends Controller
             /* @var $task \Haniki\TaskLoggerBundle\Entity\Task */
             $task = $this->getRepository('Haniki\TaskLoggerBundle\Entity\Task')
                 ->getTaskById($taskId);
-            if ($task) {
-                $matches = array();
-                if (preg_match('/#[A-Za-z]+\-[0-9]+/', $task->getDescription(), $matches)) {
-                    $api = $this->get('jira_api');
-                    $issueKey = str_replace('#', '', $matches[0]);
-                    $comment = $request->get('comment', $task->getDescription());
-                    $params = array(
-                        "started" => str_replace('+', '.000+', $task->getWorkLogs()->last()->getStartedAt()->format(\DateTime::ISO8601)),
-                        "comment" => $comment,
-                        "timeSpent" => $task->getDuration(),
-                    );
 
+            if (!$task) {
+                return new JsonResponse(array('error' => 'Task not found', 400));
+            } elseif ($task->getUser()->getId() != $this->getUser()->getId()) {
+                return new JsonResponse(array('error' => 'You have no right to access this resource', 403));
+            }
+
+            $matches = array();
+            if (preg_match('/#[A-Za-z]+\-[0-9]+/', $task->getDescription(), $matches)) {
+                $api = $this->get('jira_api');
+                $issueKey = str_replace('#', '', $matches[0]);
+                $comment = $request->get('comment', $task->getDescription());
+                $params = array(
+                    "started" => str_replace('+', '.000+', $task->getWorkLogs()->last()->getStartedAt()->format(\DateTime::ISO8601)),
+                    "comment" => $comment,
+                    "timeSpent" => $task->getDuration(),
+                );
+
+                try {
                     $issue = $api->addWorkLog($issueKey, $params);
-                    return new JsonResponse($issue->getResult());
+                } catch (\JiraRestClient\Api\Exception $e) {
+                    //Dirty fix to ignore the CURLE_RECV_ERROR
+                    if ($e->getCode() == 56) {
+                        return new JsonResponse(array('warning' => 'Exception raised ['.$e->getMessage().']'));
+                    }
+
+                    return new JsonResponse(array('error' => 'Exception raised ['.$e->getMessage().']'), 400);
                 }
+
+                return new JsonResponse($issue->getResult());
             }
 
             return new JsonResponse(array('error' => 'No Issue found'), 400);

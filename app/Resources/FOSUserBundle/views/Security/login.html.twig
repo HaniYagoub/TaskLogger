@@ -1,0 +1,41 @@
+{% extends "FOSUserBundle::layout.html.twig" %}
+
+{% trans_default_domain 'FOSUserBundle' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+
+    <link href="{{ asset('bundles/hanikitasklogger/css/login.css') }}" type="text/css" rel="stylesheet" />
+{% endblock %}
+
+{% block fos_user_content %}
+    <div class="container form-security form-signin">
+        <form action="{{ path("fos_user_security_check") }}" method="post" id="login" role="form">
+            <h2 class="form-signin-heading">Please sign in</h2>
+            <fieldset>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token }}" />
+
+                <label for="username" class="sr-only">{{ 'security.login.username'|trans }}</label>
+                <input type="text" class="form-control" placeholder="{{ 'security.login.username'|trans }}" id="username" name="_username" value="{{ last_username }}" required="required" autofocus />
+
+                <label for="password" class="sr-only">{{ 'security.login.password'|trans }}</label>
+                <input type="password" class="form-control" id="password" name="_password" placeholder="{{ 'security.login.password'|trans }}" required="required" />
+
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="remember_me" name="_remember_me" class="ace" />{{ 'security.login.remember_me'|trans }}
+                    </label>
+                </div>
+                <button type="submit" id="_submit" name="_submit" class="btn btn-lg btn-primary btn-block">
+                    {{ 'security.login.submit'|trans }}
+                </button>
+            </fieldset>
+        </form>
+
+        <hr />
+
+        <p class="form-footer">
+            Not registered yet ? <a href="{{ path('fos_user_registration_register') }}">Sign Up Now !</a>
+        </p>
+    </div> <!-- /container -->
+{% endblock %}

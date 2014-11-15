@@ -20,7 +20,7 @@ class Task
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    protected $id;
 
     /**
      * @var User $user
@@ -34,7 +34,7 @@ class Task
      *      referencedColumnName="id"
      * )
      */
-    private $user;
+    protected $user;
 
     /**
      *
@@ -46,28 +46,28 @@ class Task
      *      cascade={"persist"}
      * )
      */
-    private $workLogs;
+    protected $workLogs;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="createdAt", type="datetime")
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="updatedAt", type="datetime")
      */
-    private $updatedAt;
+    protected $updatedAt;
 
     /**
      * @var string
      *
      * @ORM\Column(name="description", type="string", length=255)
      */
-    private $description;
+    protected $description;
 
     /**
      * Constructor

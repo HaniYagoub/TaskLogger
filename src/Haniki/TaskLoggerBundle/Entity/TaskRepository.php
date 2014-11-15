@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityRepository;
 
 use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
  * TaskRepository
@@ -27,6 +28,7 @@ class TaskRepository extends EntityRepository
             ->createQueryBuilder('t')
             ->select('t, w')
             ->leftJoin('t.workLogs', 'w')
+            ->join('t.user', 'u')
             ->where('t.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
@@ -45,6 +47,7 @@ class TaskRepository extends EntityRepository
             ->createQueryBuilder('t')
             ->select('t, w')
             ->leftJoin('t.workLogs', 'w')
+            ->join('t.user', 'u')
             ->where('t.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
@@ -59,9 +62,10 @@ class TaskRepository extends EntityRepository
      * @param string $description
      * @return Task
      */
-    public function createTask($description)
+    public function createTask($user, $description)
     {
         $task = new Task();
+        $task->setUser($user);
         $task->setDescription($description);
 
         $entityManager = $this->getEntityManager();
@@ -77,7 +81,7 @@ class TaskRepository extends EntityRepository
      * @param string $date
      * @return array An array of Task objects
      */
-    public function getTasksByDate($date = null)
+    public function getTasksByDate($userId, $date = null)
     {
         $startedAt = new \DateTime();
         $startedAt->setTimestamp(strtotime($date == null ? 'now': $date));
@@ -86,8 +90,11 @@ class TaskRepository extends EntityRepository
             ->createQueryBuilder('t')
             ->select('t, w')
             ->innerJoin('t.workLogs', 'w')
+            ->innerJoin('t.user', 'u')
             ->where('w.startedAt >= :start')
+            ->andWhere('u.id = :userId')
             ->andWhere('w.startedAt <= :end')
+            ->setParameter('userId', $userId)
             ->setParameter('start', $startedAt->format('Y-m-d 00:00:00'))
             ->setParameter('end', $startedAt->format('Y-m-d 24:59:59'))
             ->orderBy('t.updatedAt', 'desc')
@@ -105,13 +112,15 @@ class TaskRepository extends EntityRepository
      * @throws ResourceNotFoundException If No Task is found with the given taskId
      * @throws MissingMandatoryParametersException If no taskId is specified
      */
-    public function createWorkLog($taskId)
+    public function createWorkLog(User $user, $taskId)
     {
         if($taskId != null) {
             $task = $this->getTaskById($taskId);
 
             if (!$task) {
                 throw new ResourceNotFoundException('No task found for this ID : ' . $taskId);
+            } elseif ($task->getUser()->getId() != $user->getId()) {
+                throw new AccessDeniedException('You have no right to access this resource');
             }
 
             $workLog = new WorkLog();
@@ -135,12 +144,14 @@ class TaskRepository extends EntityRepository
      * @return Task
      * @throws ResourceNotFoundException If No Task is found with the given taskId
      */
-    public function stopTask($taskId, $date = null)
+    public function stopTask($user, $taskId)
     {
         $task = $this->getTaskById($taskId);
 
         if (!$task) {
             throw new ResourceNotFoundException('No task found for this ID : ' . $taskId);
+        } elseif ($task->getUser()->getId() != $user->getId()) {
+            throw new AccessDeniedException('You have no right to access this resource');
         }
 
         $entityManager = $this->getEntityManager();
@@ -155,22 +166,7 @@ class TaskRepository extends EntityRepository
         }
         $entityManager->flush();
 
-        $startedAt = new \DateTime();
-        $startedAt->setTimestamp(strtotime($date == null ? 'now': $date));
-        $tasks = $this
-            ->createQueryBuilder('t')
-            ->select('t, w')
-            ->innerJoin('t.workLogs', 'w')
-            ->where('t.id = :id')
-            ->andWhere('w.startedAt >= :start')
-            ->andWhere('w.startedAt <= :end')
-            ->setParameter('start', $startedAt->format('Y-m-d 00:00:00'))
-            ->setParameter('end', $startedAt->format('Y-m-d 24:59:59'))
-            ->setParameter('id', $taskId)
-            ->getQuery()
-            ->getArrayResult();
-
-        return isset($tasks[0]) ? $tasks[0] : null;
+        return $this->getTaskAsArray($taskId);
     }
 
     /**
@@ -182,13 +178,15 @@ class TaskRepository extends EntityRepository
      * @throws ResourceNotFoundException If No Task is found with the given taskId
      * @throws MissingMandatoryParametersException If no taskId is specified
      */
-    public function updateTaskDescription($taskId, $description)
+    public function updateTaskDescription($user, $taskId, $description)
     {
         if($taskId != null) {
             $task = $this->find($taskId);
 
             if (!$task) {
                 throw new ResourceNotFoundException('No task found for this ID : ' . $taskId);
+            } elseif ($task->getUser()->getId() != $user->getId()) {
+                throw new AccessDeniedException('You have no right to access this resource');
             }
 
             $task->setDescription(strip_tags($description));
