@@ -1,7 +1,9 @@
 services:
-    jira_basic:
-        class: JiraRestClient\Api\Authentication\Basic
-        arguments: [%jira_username%, %jira_password%]
     jira_api:
-        class: JiraRestClient\Api
-        arguments: [%jira_url%, "@jira_basic"]
+        class: Haniki\TaskLoggerBundle\Services\JiraApi
+        arguments: ["@security.context"]
+    task_logger_user.profile.form.type:
+        class: Haniki\TaskLoggerBundle\Form\Type\ProfileFormType
+        arguments: [%fos_user.model.user.class%]
+        tags:
+            - { name: form.type, alias: task_logger_user_profile }

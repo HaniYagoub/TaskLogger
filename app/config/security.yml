@@ -21,6 +21,8 @@ security:
     access_control:
         - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/jira, roles: ROLE_JIRA_USER }
 
     role_hierarchy:
+        ROLE_JIRA_USER: ROLE_USER
         ROLE_ADMIN: ROLE_USER

@@ -62,6 +62,9 @@ fos_user:
     db_driver:     orm
     firewall_name: main
     user_class:    Haniki\TaskLoggerBundle\Entity\User
+    profile:
+        form:
+            type: task_logger_user_profile
 
 # JMS Security Configuration
 jms_security_extra:

@@ -6,15 +6,18 @@
             </button>
             <a class="navbar-brand" href="{{ path('show_tasks') }}">TaskLogger</a>
         </div>
-        {% if date is defined %}
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="{{ path('show_tasks', {date: date.modify('-1 day').format('Y-m-d')}) }}" class="glyphicon glyphicon-chevron-left"></a></li>
-                    <li><a id="log-date">{{date.modify('+1 day').format('Y-m-d')}}</a></li>
-                    <li><a href="{{ path('show_tasks', {date: date.modify('+1 day').format('Y-m-d')}) }}" class="glyphicon glyphicon-chevron-right"></a></li>
-                    <li><a href="{{ path('fos_user_security_logout') }}">Logout</a></li>
+                    {% if date is defined %}
+                        <li><a href="{{ path('show_tasks', {date: date.modify('-1 day').format('Y-m-d')}) }}" class="glyphicon glyphicon-chevron-left"></a></li>
+                        <li><a id="log-date">{{date.modify('+1 day').format('Y-m-d')}}</a></li>
+                        <li><a href="{{ path('show_tasks', {date: date.modify('+1 day').format('Y-m-d')}) }}" class="glyphicon glyphicon-chevron-right"></a></li>
+                    {% endif %}
+                    {% if app.user %}
+                        <li><a href="{{ path('fos_user_profile_edit') }}">Profile</a></li>
+                        <li><a href="{{ path('fos_user_security_logout') }}">Logout</a></li>
+                    {% endif %}
                 </ul>
             </div>
-        {% endif %}
     </div>
 </nav>
